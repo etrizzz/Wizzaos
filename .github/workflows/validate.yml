@@ -16,7 +16,7 @@ jobs:
       - name: Validate shell scripts
         run: |
           set -e
-          find scripts -type f -name '*.sh' -print0 | while IFS= read -r -d '' file; do
+          find scripts apps -type f -name '*.sh' -print0 | while IFS= read -r -d '' file; do
             echo "Checking $file"
             bash -n "$file"
           done
@@ -28,9 +28,35 @@ jobs:
             exit 1
           fi
 
-      - name: Check required project files
+      - name: Check required WizzaOS project files
         run: |
+          set -e
           test -f README.md
           test -f docs/ARCHITECTURE.md
           test -f packages/base.txt
+          test -f packages/desktop.txt
           test -f config/systemd/zram-generator.conf
+          test -f config/sysctl.d/90-wizza-6g.conf
+          test -f apps/wizza-center/wizza-center.sh
+          test -f apps/wizza-session/wizza-session.sh
+          test -f overlay/etc/os-release
+          test -f overlay/usr/share/xsessions/wizzaos.desktop
+          test -f overlay/etc/lightdm/lightdm.conf.d/50-wizzaos.conf
+          test -f scripts/build-iso.sh
+          test -f scripts/preflight.sh
+
+      - name: Validate package manifests
+        run: |
+          set -e
+          for manifest in packages/base.txt packages/desktop.txt; do
+            echo "Checking $manifest"
+            if grep -n -E '^[[:space:]]+|[[:space:]]+$' "$manifest"; then
+              echo "Whitespace error in $manifest"
+              exit 1
+            fi
+          done
+
+      - name: Verify WizzaOS identity
+        run: |
+          grep -q '^ID=wizzaos$' overlay/etc/os-release
+          grep -q '^NAME="WizzaOS"$' overlay/etc/os-release
