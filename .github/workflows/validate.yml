@@ -1,0 +1,36 @@
+name: Validate WizzaOS
+
+on:
+  push:
+    branches: [main, wizza-dev]
+  pull_request:
+    branches: [main]
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Validate shell scripts
+        run: |
+          set -e
+          find scripts -type f -name '*.sh' -print0 | while IFS= read -r -d '' file; do
+            echo "Checking $file"
+            bash -n "$file"
+          done
+
+      - name: Reject obvious merge markers
+        run: |
+          if grep -R -n -E '^(<<<<<<<|=======|>>>>>>>)' --exclude-dir=.git .; then
+            echo 'Merge conflict markers found.'
+            exit 1
+          fi
+
+      - name: Check required project files
+        run: |
+          test -f README.md
+          test -f docs/ARCHITECTURE.md
+          test -f packages/base.txt
+          test -f config/systemd/zram-generator.conf
