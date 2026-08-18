@@ -32,6 +32,7 @@ fi
 
 for path in \
   "$REPO_ROOT/packages/base.txt" \
+  "$REPO_ROOT/packages/desktop.txt" \
   "$REPO_ROOT/config/systemd/zram-generator.conf" \
   "$REPO_ROOT/config/sysctl.d/90-wizza-6g.conf" \
   "$REPO_ROOT/scripts/hardware-report.sh" \
@@ -45,7 +46,8 @@ for path in \
 done
 
 echo "=== WizzaOS ISO Builder ==="
-echo "Base: Ubuntu $CODENAME / amd64"
+echo "Base technique: Ubuntu $CODENAME / amd64"
+echo "Produit: WizzaOS"
 echo "Work: $WORK_DIR"
 
 if [[ -z "${WIZZA_BUILD_DIR:-}" && "$WORK_DIR" != "$REPO_ROOT/.build/live" ]]; then
@@ -85,7 +87,8 @@ lb config \
   --bootappend-live "boot=live components quiet splash hostname=wizzaos"
 
 mkdir -p config/package-lists
-cp "$REPO_ROOT/packages/base.txt" config/package-lists/wizza.list.chroot
+cp "$REPO_ROOT/packages/base.txt" config/package-lists/wizza-base.list.chroot
+cp "$REPO_ROOT/packages/desktop.txt" config/package-lists/wizza-desktop.list.chroot
 
 mkdir -p config/includes.chroot
 if [[ -d "$REPO_ROOT/overlay" ]]; then
@@ -100,7 +103,7 @@ install -m 0755 "$REPO_ROOT/scripts/preflight.sh" config/includes.chroot/usr/loc
 install -m 0755 "$REPO_ROOT/apps/wizza-center/wizza-center.sh" config/includes.chroot/usr/local/bin/wizza-center
 install -m 0755 "$REPO_ROOT/apps/wizza-session/wizza-session.sh" config/includes.chroot/usr/local/bin/wizza-session
 
-echo "Construction de l'image live…"
+echo "Construction de l'image live WizzaOS…"
 lb build
 
 iso="$(find "$WORK_DIR" -maxdepth 1 -type f -name '*.iso' -print -quit)"
