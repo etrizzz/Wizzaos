@@ -37,7 +37,10 @@ for path in \
   "$REPO_ROOT/scripts/hardware-report.sh" \
   "$REPO_ROOT/scripts/preflight.sh" \
   "$REPO_ROOT/apps/wizza-center/wizza-center.sh" \
-  "$REPO_ROOT/overlay/etc/os-release"; do
+  "$REPO_ROOT/apps/wizza-session/wizza-session.sh" \
+  "$REPO_ROOT/overlay/etc/os-release" \
+  "$REPO_ROOT/overlay/usr/share/xsessions/wizzaos.desktop" \
+  "$REPO_ROOT/overlay/etc/lightdm/lightdm.conf.d/50-wizzaos.conf"; do
   [[ -f "$path" ]] || { echo "ERROR: fichier requis absent: $path" >&2; exit 1; }
 done
 
@@ -95,6 +98,7 @@ cp "$REPO_ROOT/config/sysctl.d/90-wizza-6g.conf" config/includes.chroot/etc/sysc
 install -m 0755 "$REPO_ROOT/scripts/hardware-report.sh" config/includes.chroot/usr/local/sbin/wizza-hardware-report
 install -m 0755 "$REPO_ROOT/scripts/preflight.sh" config/includes.chroot/usr/local/sbin/wizza-preflight
 install -m 0755 "$REPO_ROOT/apps/wizza-center/wizza-center.sh" config/includes.chroot/usr/local/bin/wizza-center
+install -m 0755 "$REPO_ROOT/apps/wizza-session/wizza-session.sh" config/includes.chroot/usr/local/bin/wizza-session
 
 echo "Construction de l'image live…"
 lb build
