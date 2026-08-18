@@ -35,7 +35,9 @@ for path in \
   "$REPO_ROOT/config/systemd/zram-generator.conf" \
   "$REPO_ROOT/config/sysctl.d/90-wizza-6g.conf" \
   "$REPO_ROOT/scripts/hardware-report.sh" \
-  "$REPO_ROOT/scripts/preflight.sh"; do
+  "$REPO_ROOT/scripts/preflight.sh" \
+  "$REPO_ROOT/apps/wizza-center/wizza-center.sh" \
+  "$REPO_ROOT/overlay/etc/os-release"; do
   [[ -f "$path" ]] || { echo "ERROR: fichier requis absent: $path" >&2; exit 1; }
 done
 
@@ -82,11 +84,17 @@ lb config \
 mkdir -p config/package-lists
 cp "$REPO_ROOT/packages/base.txt" config/package-lists/wizza.list.chroot
 
-mkdir -p config/includes.chroot/etc/systemd config/includes.chroot/etc/sysctl.d config/includes.chroot/usr/local/sbin
+mkdir -p config/includes.chroot
+if [[ -d "$REPO_ROOT/overlay" ]]; then
+  rsync -a "$REPO_ROOT/overlay/" config/includes.chroot/
+fi
+
+mkdir -p config/includes.chroot/etc/systemd config/includes.chroot/etc/sysctl.d config/includes.chroot/usr/local/sbin config/includes.chroot/usr/local/bin
 cp "$REPO_ROOT/config/systemd/zram-generator.conf" config/includes.chroot/etc/systemd/zram-generator.conf
 cp "$REPO_ROOT/config/sysctl.d/90-wizza-6g.conf" config/includes.chroot/etc/sysctl.d/90-wizza-6g.conf
 install -m 0755 "$REPO_ROOT/scripts/hardware-report.sh" config/includes.chroot/usr/local/sbin/wizza-hardware-report
 install -m 0755 "$REPO_ROOT/scripts/preflight.sh" config/includes.chroot/usr/local/sbin/wizza-preflight
+install -m 0755 "$REPO_ROOT/apps/wizza-center/wizza-center.sh" config/includes.chroot/usr/local/bin/wizza-center
 
 echo "Construction de l'image live…"
 lb build
