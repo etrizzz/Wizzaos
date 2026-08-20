@@ -14,10 +14,12 @@ fi
 locale-gen fr_FR.UTF-8
 update-locale LANG=fr_FR.UTF-8 LANGUAGE=fr_FR:fr
 
-# Install the WizzaOS-owned Calamares profile after package installation, so
-# distribution package defaults cannot overwrite our installer configuration.
+# Preserve the distribution-provided Calamares module defaults and override
+# only the WizzaOS-owned profile. This keeps required common module configs
+# such as mount/fstab/machineid/locale/umount available to the installer.
 if [ -d /usr/share/wizzaos/calamares ]; then
-    rm -rf /etc/calamares
-    mkdir -p /etc/calamares
-    cp -a /usr/share/wizzaos/calamares/. /etc/calamares/
+    install -d /etc/calamares/modules /etc/calamares/branding/wizzaos
+    cp /usr/share/wizzaos/calamares/settings.conf /etc/calamares/settings.conf
+    cp /usr/share/wizzaos/calamares/modules/*.conf /etc/calamares/modules/
+    cp -a /usr/share/wizzaos/calamares/branding/wizzaos/. /etc/calamares/branding/wizzaos/
 fi
