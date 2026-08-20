@@ -12,6 +12,16 @@ on:
       - 'packages/**'
       - 'scripts/**'
       - '.github/workflows/build-iso.yml'
+  pull_request:
+    branches: [wizza-dev]
+    paths:
+      - 'apps/**'
+      - 'config/**'
+      - 'installer/**'
+      - 'overlay/**'
+      - 'packages/**'
+      - 'scripts/**'
+      - '.github/workflows/build-iso.yml'
 
 permissions:
   contents: read
