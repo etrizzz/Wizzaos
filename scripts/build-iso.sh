@@ -37,13 +37,37 @@ for path in \
   "$REPO_ROOT/apps/wizza-center/wizza-center.sh" \
   "$REPO_ROOT/apps/wizza-session/wizza-session.sh" \
   "$REPO_ROOT/apps/wizza-compat/wizza-winlaunch.sh" \
-  "$REPO_ROOT/apps/wizza-installer/wizza-installer.sh"; do
+  "$REPO_ROOT/apps/wizza-installer/wizza-installer.sh" \
+  "$REPO_ROOT/config/systemd/zram-generator.conf" \
+  "$REPO_ROOT/config/sysctl.d/90-wizza-6g.conf" \
+  "$REPO_ROOT/overlay/etc/os-release" \
+  "$REPO_ROOT/overlay/usr/share/xsessions/wizzaos.desktop" \
+  "$REPO_ROOT/overlay/etc/lightdm/lightdm.conf.d/50-wizzaos.conf" \
+  "$REPO_ROOT/overlay/usr/share/applications/wizza-windows.desktop" \
+  "$REPO_ROOT/overlay/etc/xdg/mimeapps.list" \
+  "$REPO_ROOT/overlay/etc/default/locale"; do
   [[ -f "$path" ]] || { echo "ERROR: fichier requis absent: $path" >&2; exit 1; }
 done
 
-rm -rf -- "$WORK_DIR"
-mkdir -p "$WORK_DIR" "$DIST_DIR"
-cd "$WORK_DIR"
+# Never allow a malformed environment variable to turn cleanup into an
+# arbitrary recursive deletion. The build directory must be a dedicated
+# non-root path and must not resolve to the repository root itself.
+work_real="$(realpath -m "$WORK_DIR")"
+repo_real="$(realpath -m "$REPO_ROOT")"
+case "$work_real" in
+  /|/home|/root|/tmp|/usr|/var|/etc|"$repo_real")
+    echo "ERROR: chemin de build dangereux refusé: $work_real" >&2
+    exit 1
+    ;;
+esac
+[[ "$work_real" == "$repo_real"/* || -n "${WIZZA_BUILD_DIR:-}" ]] || {
+  echo "ERROR: chemin de build inattendu: $work_real" >&2
+  exit 1
+}
+
+rm -rf -- "$work_real"
+mkdir -p "$work_real" "$DIST_DIR"
+cd "$work_real"
 
 lb_help="$(lb config --help 2>&1 || true)"
 if grep -q -- '--architecture ' <<<"$lb_help"; then arch_opt=(--architecture amd64); else arch_opt=(--architectures amd64); fi
@@ -59,9 +83,6 @@ config_args=(
   --apt-source-archives false
 )
 
-# live-build a changé plusieurs noms d'options entre Ubuntu 24.04 et 26.04.
-# WizzaOS n'échoue pas pour une option cosmétique absente : on l'active
-# uniquement quand la version du builder la propose réellement.
 if grep -q -- '--security ' <<<"$lb_help"; then
   config_args+=(--security true)
 fi
@@ -111,7 +132,7 @@ install -m 0755 "$REPO_ROOT/scripts/chroot-finalize.sh" config/hooks/live/0100-w
 echo "Construction de l'image WizzaOS…"
 lb build
 
-iso="$(find "$WORK_DIR" -maxdepth 1 -type f -name '*.iso' -print -quit)"
+iso="$(find "$work_real" -maxdepth 1 -type f -name '*.iso' -print -quit)"
 [[ -n "$iso" ]] || { echo "ERROR: aucune ISO produite." >&2; exit 1; }
 output="$DIST_DIR/WizzaOS-${CODENAME}-amd64-live.iso"
 cp -- "$iso" "$output"
