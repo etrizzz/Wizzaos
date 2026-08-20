@@ -1,0 +1,6 @@
+# WizzaOS French language layer
+language-pack-fr
+language-pack-fr-base
+language-pack-gnome-fr
+language-pack-gnome-fr-base
+libreoffice-l10n-fr
