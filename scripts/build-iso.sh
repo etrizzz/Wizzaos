@@ -49,21 +49,41 @@ lb_help="$(lb config --help 2>&1 || true)"
 if grep -q -- '--architecture ' <<<"$lb_help"; then arch_opt=(--architecture amd64); else arch_opt=(--architectures amd64); fi
 if grep -q -- '--binary-image ' <<<"$lb_help"; then binary_opt=(--binary-image iso-hybrid); else binary_opt=(--binary-images iso-hybrid); fi
 
-lb config \
-  --mode ubuntu \
-  --distribution "$CODENAME" \
-  "${arch_opt[@]}" \
-  "${binary_opt[@]}" \
-  --archive-areas "main restricted universe multiverse" \
-  --apt-recommends false \
-  --apt-source-archives false \
-  --security true \
-  --updates true \
-  --image-name "$IMAGE_NAME" \
-  --iso-application "WizzaOS Live" \
-  --iso-publisher "WizzaOS Project" \
-  --iso-volume "WIZZAOS" \
+config_args=(
+  --mode ubuntu
+  --distribution "$CODENAME"
+  "${arch_opt[@]}"
+  "${binary_opt[@]}"
+  --archive-areas "main restricted universe multiverse"
+  --apt-recommends false
+  --apt-source-archives false
+)
+
+# live-build a changé plusieurs noms d'options entre Ubuntu 24.04 et 26.04.
+# WizzaOS n'échoue pas pour une option cosmétique absente : on l'active
+# uniquement quand la version du builder la propose réellement.
+if grep -q -- '--security ' <<<"$lb_help"; then
+  config_args+=(--security true)
+fi
+if grep -q -- '--updates ' <<<"$lb_help"; then
+  config_args+=(--updates true)
+else
+  echo "INFO: live-build ne propose pas --updates; poursuite sans cette option explicite."
+fi
+if grep -q -- '--image-name ' <<<"$lb_help"; then
+  config_args+=(--image-name "$IMAGE_NAME")
+else
+  echo "INFO: live-build ne propose pas --image-name; le fichier final sera renommé par WizzaOS."
+fi
+
+config_args+=(
+  --iso-application "WizzaOS Live"
+  --iso-publisher "WizzaOS Project"
+  --iso-volume "WIZZAOS"
   --bootappend-live "boot=live components quiet splash hostname=wizzaos locales=fr_FR.UTF-8 keyboard-layouts=fr"
+)
+
+lb config "${config_args[@]}"
 
 mkdir -p config/package-lists
 cp "$REPO_ROOT/packages/base.txt" config/package-lists/wizza-base.list.chroot
