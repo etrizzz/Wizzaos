@@ -23,4 +23,5 @@ systemd-zram-generator
 zenity
 linux-image-generic
 linux-firmware
-policykit-1
+polkitd
+pkexec
