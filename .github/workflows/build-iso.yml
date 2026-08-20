@@ -3,7 +3,7 @@ name: Build WizzaOS ISO
 on:
   workflow_dispatch:
   push:
-    branches: [wizza-dev, wizza-installer-pass]
+    branches: ['wizza-*']
     paths:
       - 'apps/**'
       - 'config/**'
