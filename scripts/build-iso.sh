@@ -81,6 +81,7 @@ config_args=(
   --archive-areas "main restricted universe multiverse"
   --apt-recommends false
   --apt-source-archives false
+  --memtest none
 )
 
 if grep -q -- '--security ' <<<"$lb_help"; then
