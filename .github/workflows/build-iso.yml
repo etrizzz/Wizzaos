@@ -50,6 +50,19 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y live-build debootstrap xorriso squashfs-tools rsync
 
+      - name: Validate package manifests against Ubuntu 26.04
+        run: |
+          set -euo pipefail
+          failed=0
+          while IFS= read -r pkg; do
+            [[ -z "$pkg" || "$pkg" == \#* ]] && continue
+            if ! apt-cache show "$pkg" >/dev/null 2>&1; then
+              echo "Package unavailable on Ubuntu 26.04: $pkg"
+              failed=1
+            fi
+          done < <(cat packages/*.txt)
+          exit "$failed"
+
       - name: Build WizzaOS ISO
         env:
           WIZZA_CODENAME: resolute
