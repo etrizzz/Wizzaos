@@ -1,0 +1,10 @@
+[Desktop Entry]
+Type=Application
+Name=Wizza Windows
+Comment=Lancer une application Windows avec la couche de compatibilité WizzaOS
+Exec=wizza-winlaunch %f
+Terminal=false
+NoDisplay=true
+StartupNotify=true
+MimeType=application/x-ms-dos-executable;application/vnd.microsoft.portable-executable;application/x-msdownload;application/x-msi;
+Categories=System;

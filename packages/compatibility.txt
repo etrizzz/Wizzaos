@@ -1,0 +1,14 @@
+# WizzaOS compatibility core — Windows and retro
+wine
+wine64
+wine-binfmt
+winetricks
+fonts-wine
+cabextract
+fuseiso
+dosbox-x
+scummvm
+retroarch
+libretro-beetle-psx
+libcdio-utils
+udftools

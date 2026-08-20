@@ -1,0 +1,11 @@
+[Desktop Entry]
+Version=1.0
+Type=Application
+Name=Recherche Wizza
+Comment=Rechercher et lancer une application WizzaOS
+Exec=xfce4-appfinder
+Icon=system-search
+Terminal=false
+Categories=Utility;System;
+Keywords=Wizza;recherche;search;applications;lancer;
+StartupNotify=true

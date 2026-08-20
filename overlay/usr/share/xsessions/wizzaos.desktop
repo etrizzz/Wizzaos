@@ -1,0 +1,7 @@
+[Desktop Entry]
+Name=WizzaOS
+Comment=WizzaOS Desktop Session
+Exec=/usr/local/bin/wizza-session
+TryExec=/usr/local/bin/wizza-session
+Type=Application
+DesktopNames=WizzaOS;XFCE;
