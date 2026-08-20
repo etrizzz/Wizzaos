@@ -1,11 +1,14 @@
 # WizzaOS installer layer
 calamares
+calamares-settings-ubuntu-common
 parted
 gparted
 dosfstools
 e2fsprogs
 rsync
 squashfs-tools
+cryptsetup
+keyutils
 grub-common
 grub2-common
 grub-pc-bin
