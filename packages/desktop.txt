@@ -1,0 +1,49 @@
+# WizzaOS desktop essentials — complete daily-use layer
+# Kept separate from base so the desktop stack remains auditable/modular.
+
+# Files and removable storage
+thunar
+thunar-volman
+thunar-archive-plugin
+gvfs
+gvfs-backends
+udisks2
+xdg-user-dirs
+xdg-user-dirs-gtk
+
+# Session / permissions / notifications / power
+policykit-1-gnome
+xfce4-notifyd
+xfce4-power-manager
+xfce4-pulseaudio-plugin
+xfce4-taskmanager
+xfce4-screenshooter
+xfce4-clipman-plugin
+xfce4-panel-profiles
+
+# Everyday utilities
+xfce4-terminal
+mousepad
+ristretto
+evince
+file-roller
+gnome-disk-utility
+
+# Connectivity and laptop hardware
+bluez
+blueman
+rfkill
+wpasupplicant
+
+# Updates, drivers and repositories
+update-manager
+update-notifier
+software-properties-gtk
+ubuntu-drivers-common
+
+# Archive / filesystem compatibility
+zip
+unzip
+p7zip-full
+ntfs-3g
+exfatprogs
