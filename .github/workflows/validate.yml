@@ -2,16 +2,15 @@ name: Validate WizzaOS
 
 on:
   push:
-    branches: [main, wizza-dev]
+    branches: [main, 'wizza-*']
   pull_request:
-    branches: [main]
+    branches: [main, wizza-dev]
 
 jobs:
   validate:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
       - name: Validate shell scripts
         run: |
@@ -21,7 +20,7 @@ jobs:
             bash -n "$file"
           done
 
-      - name: Reject obvious merge markers
+      - name: Reject merge markers
         run: |
           if grep -R -n -E '^(<<<<<<<|=======|>>>>>>>)' --exclude-dir=.git .; then
             echo 'Merge conflict markers found.'
@@ -31,51 +30,101 @@ jobs:
       - name: Check required WizzaOS project files
         run: |
           set -e
-          test -f README.md
-          test -f docs/ARCHITECTURE.md
-          test -f packages/base.txt
-          test -f packages/desktop.txt
-          test -f packages/compatibility.txt
-          test -f packages/french.txt
-          test -f config/systemd/zram-generator.conf
-          test -f config/sysctl.d/90-wizza-6g.conf
-          test -f apps/wizza-center/wizza-center.sh
-          test -f apps/wizza-session/wizza-session.sh
-          test -f apps/wizza-compat/wizza-winlaunch.sh
-          test -f overlay/etc/os-release
-          test -f overlay/usr/share/xsessions/wizzaos.desktop
-          test -f overlay/etc/lightdm/lightdm.conf.d/50-wizzaos.conf
-          test -f overlay/usr/share/applications/wizza-windows.desktop
-          test -f overlay/etc/xdg/mimeapps.list
-          test -f overlay/etc/default/locale
-          test -f scripts/build-iso.sh
-          test -f scripts/preflight.sh
-          test -f scripts/chroot-finalize.sh
+          for f in \
+            README.md \
+            docs/ARCHITECTURE.md \
+            packages/base.txt \
+            packages/desktop.txt \
+            packages/compatibility.txt \
+            packages/french.txt \
+            packages/installer.txt \
+            config/systemd/zram-generator.conf \
+            config/sysctl.d/90-wizza-6g.conf \
+            scripts/build-iso.sh \
+            scripts/preflight.sh \
+            scripts/chroot-finalize.sh \
+            apps/wizza-center/wizza-center.sh \
+            apps/wizza-session/wizza-session.sh \
+            apps/wizza-compat/wizza-winlaunch.sh \
+            apps/wizza-installer/wizza-installer.sh \
+            installer/calamares/settings.conf \
+            installer/calamares/modules/unpackfs.conf \
+            installer/calamares/modules/displaymanager.conf \
+            installer/calamares/modules/partition.conf \
+            installer/calamares/modules/users.conf \
+            installer/calamares/modules/welcome.conf \
+            installer/calamares/modules/bootloader.conf \
+            installer/calamares/modules/grubcfg.conf \
+            installer/calamares/branding/wizzaos/branding.desc \
+            overlay/etc/os-release \
+            overlay/etc/default/locale \
+            overlay/etc/lightdm/lightdm.conf.d/50-wizzaos.conf \
+            overlay/etc/xdg/mimeapps.list \
+            overlay/usr/share/xsessions/wizzaos.desktop \
+            overlay/usr/share/applications/wizza-windows.desktop \
+            overlay/usr/share/applications/wizza-installer.desktop; do
+            test -f "$f"
+          done
 
       - name: Validate package manifests
         run: |
           set -e
           for manifest in packages/*.txt; do
-            echo "Checking $manifest"
             if grep -n -E '^[[:space:]]+|[[:space:]]+$' "$manifest"; then
               echo "Whitespace error in $manifest"
               exit 1
             fi
           done
 
-      - name: Verify Windows compatibility handler
+      - name: Verify Windows and retro compatibility
         run: |
-          grep -q '^Exec=wizza-winlaunch %f$' overlay/usr/share/applications/wizza-windows.desktop
-          grep -q '^application/x-ms-dos-executable=wizza-windows.desktop$' overlay/etc/xdg/mimeapps.list
+          set -e
           grep -q '^wine$' packages/compatibility.txt
           grep -q '^wine-binfmt$' packages/compatibility.txt
+          grep -q '^dosbox-x$' packages/compatibility.txt
+          grep -q '^scummvm$' packages/compatibility.txt
+          grep -q '^retroarch$' packages/compatibility.txt
+          grep -q '^libretro-beetle-psx$' packages/compatibility.txt
+          grep -q '^libcdio-utils$' packages/compatibility.txt
+          grep -q '^udftools$' packages/compatibility.txt
+          grep -q '^Exec=wizza-winlaunch %f$' overlay/usr/share/applications/wizza-windows.desktop
+          grep -q '^application/x-ms-dos-executable=wizza-windows.desktop$' overlay/etc/xdg/mimeapps.list
+
+      - name: Verify installer dependencies and wiring
+        run: |
+          set -e
+          grep -q '^calamares-settings-ubuntu-common$' packages/installer.txt
+          grep -q '^cryptsetup$' packages/installer.txt
+          grep -q '^keyutils$' packages/installer.txt
+          grep -q '^grub-pc-bin$' packages/installer.txt
+          grep -q '^grub-efi-amd64-bin$' packages/installer.txt
+          grep -q 'wizza-installer.list.chroot' scripts/build-iso.sh
+          grep -q '/run/live/medium/live/filesystem.squashfs' installer/calamares/modules/unpackfs.conf
+          grep -q '^efiBootloaderId: "WizzaOS"$' installer/calamares/modules/bootloader.conf
+          grep -q '^Exec=/usr/local/bin/wizza-installer$' overlay/usr/share/applications/wizza-installer.desktop
+          ! grep -q 'rm -rf /etc/calamares' scripts/chroot-finalize.sh
+
+      - name: Verify hardware and performance foundation
+        run: |
+          grep -q '^linux-image-generic$' packages/base.txt
+          grep -q '^linux-firmware$' packages/base.txt
+          grep -q '^systemd-zram-generator$' packages/base.txt
+          grep -q 'zram-size = min(ram / 2, 3072)' config/systemd/zram-generator.conf
 
       - name: Verify French defaults
         run: |
           grep -q '^LANG=fr_FR.UTF-8$' overlay/etc/default/locale
           grep -q '^language-pack-fr$' packages/french.txt
+          grep -q '^libreoffice-l10n-fr$' packages/french.txt
 
-      - name: Verify WizzaOS identity
+      - name: Verify WizzaOS identity and session
         run: |
           grep -q '^ID=wizzaos$' overlay/etc/os-release
           grep -q '^NAME="WizzaOS"$' overlay/etc/os-release
+          grep -q '^Exec=/usr/local/bin/wizza-session$' overlay/usr/share/xsessions/wizzaos.desktop
+          grep -q '^user-session=wizzaos$' overlay/etc/lightdm/lightdm.conf.d/50-wizzaos.conf
+
+      - name: Verify safe build cleanup guard
+        run: |
+          grep -q 'chemin de build dangereux refusé' scripts/build-iso.sh
+          grep -q 'realpath -m' scripts/build-iso.sh

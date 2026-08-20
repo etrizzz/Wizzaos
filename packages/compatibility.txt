@@ -10,3 +10,5 @@ dosbox-x
 scummvm
 retroarch
 libretro-beetle-psx
+libcdio-utils
+udftools

@@ -1,9 +1,9 @@
 NAME="WizzaOS"
-PRETTY_NAME="WizzaOS 1.0 Development"
+PRETTY_NAME="WizzaOS 0.2 Development"
 ID=wizzaos
 ID_LIKE=ubuntu debian
-VERSION_ID="1.0"
-VERSION="1.0 Development"
+VERSION_ID="0.2"
+VERSION="0.2 Development"
 VERSION_CODENAME=resolute
 HOME_URL="https://github.com/etrizzz/Wizzaos"
 SUPPORT_URL="https://github.com/etrizzz/Wizzaos/issues"

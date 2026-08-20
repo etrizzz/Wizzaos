@@ -1,0 +1,9 @@
+[Desktop Entry]
+Type=Application
+Name=Installer WizzaOS
+Comment=Installer WizzaOS sur ce PC
+Exec=/usr/local/bin/wizza-installer
+Icon=system-software-install
+Terminal=false
+StartupNotify=true
+Categories=System;

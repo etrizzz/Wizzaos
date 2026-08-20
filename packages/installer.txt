@@ -7,9 +7,11 @@ dosfstools
 e2fsprogs
 rsync
 squashfs-tools
-grub-pc
+cryptsetup
+keyutils
+grub-common
+grub2-common
 grub-pc-bin
-grub-efi-amd64
 grub-efi-amd64-bin
 grub-efi-amd64-signed
 shim-signed

@@ -2,6 +2,7 @@ xfce4
 xfce4-goodies
 xfce4-whiskermenu-plugin
 lightdm
+lightdm-gtk-greeter
 network-manager
 network-manager-gnome
 pipewire
@@ -20,3 +21,7 @@ mesa-utils
 vulkan-tools
 systemd-zram-generator
 zenity
+linux-image-generic
+linux-firmware
+polkitd
+pkexec
