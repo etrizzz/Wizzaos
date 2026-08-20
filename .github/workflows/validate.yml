@@ -35,26 +35,45 @@ jobs:
           test -f docs/ARCHITECTURE.md
           test -f packages/base.txt
           test -f packages/desktop.txt
+          test -f packages/compatibility.txt
+          test -f packages/french.txt
           test -f config/systemd/zram-generator.conf
           test -f config/sysctl.d/90-wizza-6g.conf
           test -f apps/wizza-center/wizza-center.sh
           test -f apps/wizza-session/wizza-session.sh
+          test -f apps/wizza-compat/wizza-winlaunch.sh
           test -f overlay/etc/os-release
           test -f overlay/usr/share/xsessions/wizzaos.desktop
           test -f overlay/etc/lightdm/lightdm.conf.d/50-wizzaos.conf
+          test -f overlay/usr/share/applications/wizza-windows.desktop
+          test -f overlay/etc/xdg/mimeapps.list
+          test -f overlay/etc/default/locale
           test -f scripts/build-iso.sh
           test -f scripts/preflight.sh
+          test -f scripts/chroot-finalize.sh
 
       - name: Validate package manifests
         run: |
           set -e
-          for manifest in packages/base.txt packages/desktop.txt; do
+          for manifest in packages/*.txt; do
             echo "Checking $manifest"
             if grep -n -E '^[[:space:]]+|[[:space:]]+$' "$manifest"; then
               echo "Whitespace error in $manifest"
               exit 1
             fi
           done
+
+      - name: Verify Windows compatibility handler
+        run: |
+          grep -q '^Exec=wizza-winlaunch %f$' overlay/usr/share/applications/wizza-windows.desktop
+          grep -q '^application/x-ms-dos-executable=wizza-windows.desktop$' overlay/etc/xdg/mimeapps.list
+          grep -q '^wine$' packages/compatibility.txt
+          grep -q '^wine-binfmt$' packages/compatibility.txt
+
+      - name: Verify French defaults
+        run: |
+          grep -q '^LANG=fr_FR.UTF-8$' overlay/etc/default/locale
+          grep -q '^language-pack-fr$' packages/french.txt
 
       - name: Verify WizzaOS identity
         run: |

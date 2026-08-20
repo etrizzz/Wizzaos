@@ -1,0 +1,11 @@
+[Default Applications]
+application/x-ms-dos-executable=wizza-windows.desktop
+application/vnd.microsoft.portable-executable=wizza-windows.desktop
+application/x-msdownload=wizza-windows.desktop
+application/x-msi=wizza-windows.desktop
+
+[Added Associations]
+application/x-ms-dos-executable=wizza-windows.desktop;
+application/vnd.microsoft.portable-executable=wizza-windows.desktop;
+application/x-msdownload=wizza-windows.desktop;
+application/x-msi=wizza-windows.desktop;

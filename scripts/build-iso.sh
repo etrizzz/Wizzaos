@@ -33,15 +33,22 @@ fi
 for path in \
   "$REPO_ROOT/packages/base.txt" \
   "$REPO_ROOT/packages/desktop.txt" \
+  "$REPO_ROOT/packages/compatibility.txt" \
+  "$REPO_ROOT/packages/french.txt" \
   "$REPO_ROOT/config/systemd/zram-generator.conf" \
   "$REPO_ROOT/config/sysctl.d/90-wizza-6g.conf" \
   "$REPO_ROOT/scripts/hardware-report.sh" \
   "$REPO_ROOT/scripts/preflight.sh" \
+  "$REPO_ROOT/scripts/chroot-finalize.sh" \
   "$REPO_ROOT/apps/wizza-center/wizza-center.sh" \
   "$REPO_ROOT/apps/wizza-session/wizza-session.sh" \
+  "$REPO_ROOT/apps/wizza-compat/wizza-winlaunch.sh" \
   "$REPO_ROOT/overlay/etc/os-release" \
   "$REPO_ROOT/overlay/usr/share/xsessions/wizzaos.desktop" \
-  "$REPO_ROOT/overlay/etc/lightdm/lightdm.conf.d/50-wizzaos.conf"; do
+  "$REPO_ROOT/overlay/etc/lightdm/lightdm.conf.d/50-wizzaos.conf" \
+  "$REPO_ROOT/overlay/usr/share/applications/wizza-windows.desktop" \
+  "$REPO_ROOT/overlay/etc/xdg/mimeapps.list" \
+  "$REPO_ROOT/overlay/etc/default/locale"; do
   [[ -f "$path" ]] || { echo "ERROR: fichier requis absent: $path" >&2; exit 1; }
 done
 
@@ -84,24 +91,33 @@ lb config \
   --iso-application "WizzaOS Live" \
   --iso-publisher "WizzaOS Project" \
   --iso-volume "WIZZAOS" \
-  --bootappend-live "boot=live components quiet splash hostname=wizzaos"
+  --bootappend-live "boot=live components quiet splash hostname=wizzaos locales=fr_FR.UTF-8 keyboard-layouts=fr"
 
 mkdir -p config/package-lists
 cp "$REPO_ROOT/packages/base.txt" config/package-lists/wizza-base.list.chroot
 cp "$REPO_ROOT/packages/desktop.txt" config/package-lists/wizza-desktop.list.chroot
+cp "$REPO_ROOT/packages/compatibility.txt" config/package-lists/wizza-compatibility.list.chroot
+cp "$REPO_ROOT/packages/french.txt" config/package-lists/wizza-french.list.chroot
 
 mkdir -p config/includes.chroot
 if [[ -d "$REPO_ROOT/overlay" ]]; then
   rsync -a "$REPO_ROOT/overlay/" config/includes.chroot/
 fi
 
-mkdir -p config/includes.chroot/etc/systemd config/includes.chroot/etc/sysctl.d config/includes.chroot/usr/local/sbin config/includes.chroot/usr/local/bin
+mkdir -p \
+  config/includes.chroot/etc/systemd \
+  config/includes.chroot/etc/sysctl.d \
+  config/includes.chroot/usr/local/sbin \
+  config/includes.chroot/usr/local/bin \
+  config/hooks/live
 cp "$REPO_ROOT/config/systemd/zram-generator.conf" config/includes.chroot/etc/systemd/zram-generator.conf
 cp "$REPO_ROOT/config/sysctl.d/90-wizza-6g.conf" config/includes.chroot/etc/sysctl.d/90-wizza-6g.conf
 install -m 0755 "$REPO_ROOT/scripts/hardware-report.sh" config/includes.chroot/usr/local/sbin/wizza-hardware-report
 install -m 0755 "$REPO_ROOT/scripts/preflight.sh" config/includes.chroot/usr/local/sbin/wizza-preflight
 install -m 0755 "$REPO_ROOT/apps/wizza-center/wizza-center.sh" config/includes.chroot/usr/local/bin/wizza-center
 install -m 0755 "$REPO_ROOT/apps/wizza-session/wizza-session.sh" config/includes.chroot/usr/local/bin/wizza-session
+install -m 0755 "$REPO_ROOT/apps/wizza-compat/wizza-winlaunch.sh" config/includes.chroot/usr/local/bin/wizza-winlaunch
+install -m 0755 "$REPO_ROOT/scripts/chroot-finalize.sh" config/hooks/live/0100-wizza-finalize.hook.chroot
 
 echo "Construction de l'image live WizzaOS…"
 lb build
