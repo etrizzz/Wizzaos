@@ -1,0 +1,18 @@
+# WizzaOS installer layer
+calamares
+calamares-settings-ubuntu-common
+parted
+gparted
+dosfstools
+e2fsprogs
+rsync
+squashfs-tools
+grub-pc
+grub-pc-bin
+grub-efi-amd64
+grub-efi-amd64-bin
+grub-efi-amd64-signed
+shim-signed
+efibootmgr
+os-prober
+mokutil

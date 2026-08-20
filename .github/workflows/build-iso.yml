@@ -1,0 +1,61 @@
+name: Build WizzaOS ISO
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [wizza-dev]
+    paths:
+      - 'apps/**'
+      - 'config/**'
+      - 'overlay/**'
+      - 'packages/**'
+      - 'scripts/**'
+      - '.github/workflows/build-iso.yml'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: wizzaos-iso-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 90
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Validate shell syntax
+        run: |
+          set -euo pipefail
+          find scripts apps -type f -name '*.sh' -print0 | while IFS= read -r -d '' file; do
+            bash -n "$file"
+          done
+
+      - name: Install ISO build dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y live-build debootstrap xorriso squashfs-tools rsync
+
+      - name: Build WizzaOS ISO
+        env:
+          WIZZA_CODENAME: resolute
+        run: sudo --preserve-env=WIZZA_CODENAME ./scripts/build-iso.sh
+
+      - name: Verify ISO checksum
+        run: |
+          set -euo pipefail
+          cd dist
+          sha256sum -c ./*.sha256
+
+      - name: Upload WizzaOS ISO
+        uses: actions/upload-artifact@v4
+        with:
+          name: WizzaOS-resolute-amd64-live
+          path: |
+            dist/*.iso
+            dist/*.sha256
+          if-no-files-found: error
+          retention-days: 7
