@@ -1,0 +1,92 @@
+name: Build WizzaOS ISO
+
+on:
+  workflow_dispatch:
+  push:
+    branches: ['wizza-*']
+    paths:
+      - 'apps/**'
+      - 'config/**'
+      - 'installer/**'
+      - 'overlay/**'
+      - 'packages/**'
+      - 'scripts/**'
+      - '.github/workflows/build-iso.yml'
+  pull_request:
+    branches: [wizza-dev]
+    paths:
+      - 'apps/**'
+      - 'config/**'
+      - 'installer/**'
+      - 'overlay/**'
+      - 'packages/**'
+      - 'scripts/**'
+      - '.github/workflows/build-iso.yml'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: wizzaos-iso-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 90
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Validate shell syntax
+        run: |
+          set -euo pipefail
+          find scripts apps -type f -name '*.sh' -print0 | while IFS= read -r -d '' file; do
+            bash -n "$file"
+          done
+
+      - name: Install ISO build dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y live-build debootstrap xorriso squashfs-tools rsync
+
+      - name: Validate package manifests against Ubuntu 24.04
+        run: |
+          set -euo pipefail
+          failed=0
+          while IFS= read -r pkg; do
+            [[ -z "$pkg" || "$pkg" == \#* ]] && continue
+            if ! apt-cache show "$pkg" >/dev/null 2>&1; then
+              echo "Package unavailable on Ubuntu 24.04: $pkg"
+              failed=1
+            fi
+          done < <(cat packages/*.txt)
+          exit "$failed"
+
+      - name: Build WizzaOS ISO
+        env:
+          WIZZA_CODENAME: noble
+        run: sudo --preserve-env=WIZZA_CODENAME ./scripts/build-iso.sh
+
+      - name: Verify ISO checksum
+        run: |
+          set -euo pipefail
+          cd dist
+          sha256sum -c ./*.sha256
+
+      - name: Inspect ISO structure
+        run: |
+          set -euo pipefail
+          iso=$(find dist -name '*.iso' -print -quit)
+          xorriso -indev "$iso" -find / -name filesystem.squashfs -print | grep -q filesystem.squashfs
+          xorriso -indev "$iso" -find / -name vmlinuz -print | grep -q vmlinuz
+
+      - name: Upload WizzaOS ISO
+        uses: actions/upload-artifact@v4
+        with:
+          name: WizzaOS-noble-amd64-live
+          path: |
+            dist/*.iso
+            dist/*.sha256
+          if-no-files-found: error
+          retention-days: 7

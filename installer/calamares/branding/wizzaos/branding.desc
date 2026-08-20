@@ -1,0 +1,19 @@
+---
+componentName: wizzaos
+windowExpanding: normal
+strings:
+  productName: WizzaOS
+  shortProductName: WizzaOS
+  version: 0.2-dev
+  shortVersion: dev
+  versionedName: WizzaOS
+  shortVersionedName: WizzaOS 0.2-dev
+  bootloaderEntryName: WizzaOS
+images:
+  productLogo: "logo.svg"
+  productIcon: "logo.svg"
+  productWelcome: "welcome.svg"
+style:
+  SidebarBackground: "#17141D"
+  SidebarText: "#F4F0FA"
+  SidebarTextCurrent: "#D6C6FF"
