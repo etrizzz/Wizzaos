@@ -2,7 +2,7 @@ name: Validate WizzaOS
 
 on:
   push:
-    branches: [main, wizza-dev, wizza-installer-pass]
+    branches: [main, 'wizza-*']
   pull_request:
     branches: [main]
 
