@@ -3,10 +3,11 @@ name: Build WizzaOS ISO
 on:
   workflow_dispatch:
   push:
-    branches: [wizza-dev]
+    branches: [wizza-dev, wizza-installer-pass]
     paths:
       - 'apps/**'
       - 'config/**'
+      - 'installer/**'
       - 'overlay/**'
       - 'packages/**'
       - 'scripts/**'
@@ -49,6 +50,13 @@ jobs:
           set -euo pipefail
           cd dist
           sha256sum -c ./*.sha256
+
+      - name: Inspect ISO structure
+        run: |
+          set -euo pipefail
+          iso=$(find dist -name '*.iso' -print -quit)
+          xorriso -indev "$iso" -find / -name filesystem.squashfs -print | grep -q filesystem.squashfs
+          xorriso -indev "$iso" -find / -name vmlinuz -print | grep -q vmlinuz
 
       - name: Upload WizzaOS ISO
         uses: actions/upload-artifact@v4

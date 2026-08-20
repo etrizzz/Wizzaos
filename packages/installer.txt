@@ -1,6 +1,5 @@
 # WizzaOS installer layer
 calamares
-calamares-settings-ubuntu-common
 parted
 gparted
 dosfstools
